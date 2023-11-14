@@ -20,28 +20,31 @@
 #     color: '#338cc7'
 #   delegate_to: localhost
 
-- name: Criando a partição para o LVM
-  community.general.parted:
-    device: /dev/nvme0n2
-    number: 1
-    flags: [ lvm ]
-    state: present
+# - name: Criando a partição para o LVM
+#   community.general.parted:
+#     device: /dev/nvme0n2
+#     number: 1
+#     flags: [ lvm ]
+#     state: present
 
-- name: Formatando SDB1 Ext4
-  community.general.filesystem:
-    fstype: ext4
-    dev: /dev/nvme0n2p1
-    force: yes
+# - name: Formatando SDB1 Ext4
+#   community.general.filesystem:
+#     fstype: ext4
+#     dev: /dev/nvme0n2p1
+#     force: yes
 
-- name: Extendendo o VG existente
-  community.general.lvg:
-    vg: vg00
-    pvs: /dev/nvme0n1p2,/dev/nvme0n2p1
+# - name: Extendendo o VG existente
+#   community.general.lvg:
+#     vg: vg00
+#     pvs: /dev/nvme0n1p2,/dev/nvme0n2p1
 
-- name: Extendendo LV /var
-  community.general.lvol:
-    vg: vg00
-    lv: var
-    size: 40g
-    resizefs: true
+# - name: Extendendo LV /var
+#   community.general.lvol:
+#     vg: vg00
+#     lv: var
+#     size: 40g
+#     resizefs: true
+- name: subscription manager
+  community.general.redhat_subscription:
+    release: null
 ...
