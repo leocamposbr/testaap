@@ -3,7 +3,7 @@
   collections:
      - community.general
   tasks:
-     - name: "Slack + AAP Integration"
+     - name: "Coletando inventário dos servidores"
        include_role:
          name: myrole
 ...

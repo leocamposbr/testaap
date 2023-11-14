@@ -1,50 +1,21 @@
 ---
-# tasks file for /home/alolivei/GitHub/myrepos/aaptesting/myrole
-# - name: "Send message via Slack"
-#   community.general.slack:
-#     token: "{{ SLACK_TOKEN }}"
-#     channel: "{{ SLACK_CHANNEL }}"
-#     blocks:
-#       - type: section
-#         text:
-#           type: mrkdwn
-#           text: |-
-#             *Slack and AAP Integration:*
-#             Your integration worked!
-#       - type: context
-#         elements:
-#         - type: mrkdwn
-#           text: |
-#             *Result:* This test worked like a charm
-#     msg: "Status: Success"
-#     color: '#338cc7'
-#   delegate_to: localhost
+- name: Obter informações do sistema
+  ansible.builtin.setup:
+      
+- name: Extrair informações relevantes
+  set_fact:
+    server_info:
+      hostname: "{{ ansible_hostname }}"
+      ip: "{{ ansible_host }}"
+      cpu: "{{ ansible_processor_vcpus }}"
+      memoria: "{{ ansible_memory_mb.real.total }}"
+      disco: "{{ ansible_mounts | json_query('[*].{device: device, fstype: fstype, total: size_total_bytes, free: size_available_bytes }') }}"
 
-# - name: Criando a partição para o LVM
-#   community.general.parted:
-#     device: /dev/nvme0n2
-#     number: 1
-#     flags: [ lvm ]
-#     state: present
+- name: Criar arquivo CSV
+  ansible.builtin.lineinfile:
+    path: "{{ inventory_dir }}/server_info.csv"
+    create: yes
+    line: "{{ server_info | to_nice_json }}"
+  delegate_to: localhost
 
-# - name: Formatando SDB1 Ext4
-#   community.general.filesystem:
-#     fstype: ext4
-#     dev: /dev/nvme0n2p1
-#     force: yes
-
-# - name: Extendendo o VG existente
-#   community.general.lvg:
-#     vg: vg00
-#     pvs: /dev/nvme0n1p2,/dev/nvme0n2p1
-
-# - name: Extendendo LV /var
-#   community.general.lvol:
-#     vg: vg00
-#     lv: var
-#     size: 40g
-#     resizefs: true
-- name: subscription manager
-  community.general.rhsm_release:
-    release: null
 ...
