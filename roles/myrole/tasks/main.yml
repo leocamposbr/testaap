@@ -1,0 +1,22 @@
+---
+# tasks file for /home/alolivei/GitHub/myrepos/aaptesting/myrole
+- name: "Send message via Slack"
+  community.general.slack:
+    token: "{{ SLACK_TOKEN }}"
+    channel: "{{ SLACK_CHANNEL }}"
+    blocks:
+      - type: section
+        text:
+          type: mrkdwn
+          text: |-
+            *Slack and AAP Integration:*
+            Your integration worked!
+      - type: context
+        elements:
+        - type: mrkdwn
+          text: |
+            *Result:* This test worked like a charm
+    msg: "Status: Success"
+    color: '#338cc7'
+  delegate_to: localhost
+...

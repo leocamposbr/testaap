@@ -1,0 +1,3 @@
+---
+# tasks file for upgrade-rhel
+- include: upgrade-rhel.yml

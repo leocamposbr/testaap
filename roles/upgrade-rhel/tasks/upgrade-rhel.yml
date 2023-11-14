@@ -1,0 +1,121 @@
+---
+- name: UPGRADE | Atualizando subscription manager
+  command: subscription-manager refresh
+
+- name: UPGRADE | Desativar a release do RHEL
+  collections:
+    - community.general
+  community.general.rhsm_release:
+    release: null
+
+- name: UPGRADE | Efetuando atualização do S.O
+  ansible.builtin.yum:
+    name: '*'
+    state: latest
+
+- name: Reboot the machine
+  reboot:
+    reboot_timeout: 3600
+
+- name: UPGRADE | Efetuando instalação do Leapp
+  ansible.builtin.yum:
+    name: leapp-upgrade
+    state: latest
+
+- name: UPGRADE | Executar Leapp Upgrade com opções adicionais
+  command: leapp preupgrade --target 8.6
+  ignore_errors: true
+ 
+- name: UPGRADE | Copiando Arquivo Answer
+  template:
+    src: answerfile.j2
+    dest: /var/log/leapp/answerfile
+    owner: root
+    group: root
+    mode: 0644
+
+- name: UPGRADE | Desativando Modulos carregados
+  command: rmmod "{{ item }}"
+  with_items:
+    - floppy
+    - pata_acpi
+  ignore_errors: true
+
+- name: UPGRADE | Executar Leapp Upgrade com opções adicionais
+  command: leapp upgrade --target 8.6 
+
+- name: Reboot the machine
+  reboot:
+    reboot_timeout: 3600
+
+- name: UPGRADE | Cadastrando host no Satellite
+  community.general.redhat_subscription:
+    state: present
+    activationkey: "DEV"
+    server_hostname: prxvsat01.sofisant.local
+    force_register: yes
+    org_id: Sofisa
+    server_insecure: yes
+
+- name: UPGRADE | Desativar a release do RHEL
+  community.general.rhsm_release:
+    release: null
+
+- name: UPGRADE | Alterando config-manager dnf
+  command: dnf config-manager --save --setopt exclude=''
+
+#- name: UPGRADE | Listando Modulos EL7
+#  command: ls -d /lib/modules/*.el7*
+#  register: kernelmods
+
+#- name: UPGRADE | Removendo Modulos EL7
+#  command: "[ -x /usr/sbin/weak-modules ] && /usr/sbin/weak-modules --remove-kernel {{ kernelmods.stdout_lines }}"
+
+#- name: UPGRADE | Removendo Modulos EL7
+#  command: "/bin/kernel-install remove {{ kernelmods.stdout_lines }} /lib/modules/{{ kernelmods.stdout_lines }}/vmlinuz"
+
+- name: UPGRADE  | Copiando Script Listando Pacotes
+  template:
+    src: lista-pkgs-el7.sh.j2
+    dest: /home/ansible/lista-pkgs-el7.sh
+    owner: root
+    group: root
+    mode: 0777
+
+- name: UPGRADE | Listando pacotes EL7
+  command: sh /home/ansible/lista-pkgs-el7.sh
+  register: pkgsel7
+
+- name: UPGRADE| Exibir lista de pacotes instalados
+  debug:
+    var: pkgsel7.stdout_lines
+
+- name: UPGRADE | Removendo pacotes EL7
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ pkgsel7.stdout_lines }}"
+
+- name: UPGRADE | Removendo pacotes Leapp
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - leapp-deps-el8
+    - leapp-repository-deps-el8
+
+- name: UPGRADE | Removendo diretórios de modulos EL7
+  command: rm -rf /lib/modules/*el7*
+
+- name: UPGRADE | Desativar a release do RHEL
+  community.general.rhsm_release:
+    release: null
+
+- name: UPGRADE | Efetuando atualização do S.O
+  ansible.builtin.dnf:
+    name: '*'
+    state: latest
+
+- name: Reboot the machine
+  reboot:
+    reboot_timeout: 3600

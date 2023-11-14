@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rpm -qa | grep -e '\.el[67]' | grep -vE '^(gpg-pubkey|libmodulemd|katello-ca-consumer)' | sort
