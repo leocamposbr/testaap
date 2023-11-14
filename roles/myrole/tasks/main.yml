@@ -45,6 +45,6 @@
 #     size: 40g
 #     resizefs: true
 - name: subscription manager
-  community.general.redhat_subscription:
+  community.general.rhsm_release:
     release: null
 ...
