@@ -13,9 +13,9 @@
 
 - name: Criar arquivo CSV
   ansible.builtin.lineinfile:
-    path: "{{ inventory_dir }}/server_info.csv"
+    path: "/tmp/server_info.csv"
     create: yes
     line: "{{ server_info | to_nice_json }}"
-  delegate_to: localhost
+  #delegate_to: localhost
 
 ...
